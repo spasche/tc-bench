@@ -52,7 +52,7 @@ class TCFetcher(Fetcher):
     def fetch(self, options, bbox, layers):
         # TODO: generate TILES_URL with those parameters.
         params = {'WIDTH': ['256'], 'SERVICE': ['WMS'],
-                  'FORMAT': ['image/png'], 'REQUEST': ['GetMap'], 'HEIGHT': ['256'],
+                  'FORMAT': 'image/png', 'REQUEST': ['GetMap'], 'HEIGHT': ['256'],
                   'SRS': ['EPSG:21781'], 'VERSION': ['1.1.1']}
         params["LAYERS"] = ','.join(layers)
         params["BBOX"] = bbox
@@ -61,6 +61,12 @@ class TCFetcher(Fetcher):
         duration = time.time() - start
         assert format == "image/png"
         self.check_image(image)
+        if options.save_images:
+            images_dir = os.path.join(os.path.dirname(__file__), "image_results")
+            if not os.path.isdir(images_dir):
+                os.mkdir(images_dir)
+            n = len(os.listdir(images_dir))
+            open(os.path.join(images_dir, "res_%003i.png" % (n + 1)), "wb").write(image)
         return duration
 
 def main():
@@ -71,6 +77,7 @@ def main():
     parser.add_option("-v", "--verbose", action="store_true")
     parser.add_option("-d", "--dummy", action="store_true")
     parser.add_option("--profile", action="store_true")
+    parser.add_option("-s", "--save-images", action="store_true")
     parser.add_option("", "--server")
 
     parser.add_option("", "--fetcher", default="tc",
